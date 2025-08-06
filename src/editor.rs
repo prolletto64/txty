@@ -55,6 +55,9 @@ impl Editor {
                             Char('q' | 'c') => {
                                 break;
                             },
+                            Char(c) => {
+                                buffer.push(c);
+                            },
                             _ => (),
                         }
                     }else{
