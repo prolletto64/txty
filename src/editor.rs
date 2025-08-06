@@ -3,6 +3,7 @@ use crossterm::event::{read, Event::Key ,KeyModifiers, KeyCode::{Char, Enter, Ba
 use crossterm::execute;
 use crossterm::cursor::{MoveTo, EnableBlinking, DisableBlinking};
 use std::io::{stdout, Write};
+use std::option::Option::Some;
 
 pub struct Editor {
     buffer: String,
@@ -66,6 +67,9 @@ impl Editor {
                             },
                             Backspace => {
                                 buffer.pop();
+                                if buffer.chars().last() == Some('\r'){
+                                    buffer.pop();
+                                }
                             },
                             _ => (),
                         }
