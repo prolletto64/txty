@@ -1,25 +1,29 @@
 use crossterm::terminal::{enable_raw_mode,disable_raw_mode,Clear,ClearType};
-use crossterm::event::{read, Event::Key ,KeyModifiers, KeyCode::{Char, Enter}};
+use crossterm::event::{read, Event::Key ,KeyModifiers, KeyCode::{Char, Enter, Backspace}};
 use crossterm::execute;
 use crossterm::cursor::{MoveTo, EnableBlinking, DisableBlinking};
 use std::io::{stdout, Write};
 
-pub struct Editor {}
+pub struct Editor {
+    buffer: String,
+}
 
 impl Editor {
     pub fn default() -> Self{
-        Editor{}
+        Editor{
+            buffer: String::from(""),
+        }
     }
-    pub fn run(&self){
+    pub fn run(&mut self){
        Editor::init();
-       Editor::main_loop();
+       Editor::main_loop(&mut self.buffer);
        Editor::close();
     }
     fn init(){
         let _ = enable_raw_mode();
         Editor::clear_screen();
         match execute!(stdout(),EnableBlinking){
-            Ok() => (),
+            Ok(_) => (),
             Err(err) => panic!("{err}"),
         }
     }
@@ -27,21 +31,21 @@ impl Editor {
         let _ = disable_raw_mode();
         Editor::clear_screen();
         match execute!(stdout(),DisableBlinking){
-            Ok() => (),
+            Ok(_) => (),
             Err(err) => panic!("{err}"),
         }
     }
     fn clear_screen(){
         match execute!(stdout(),Clear(ClearType::All)){
-            Ok() => (),
+            Ok(_) => (),
             Err(err) => panic!("{err}"),
         }
         match execute!(stdout(),MoveTo(0,0)){
-            Ok() => (),
+            Ok(_) => (),
             Err(err) => panic!("{err}"),
         }
     }
-    fn main_loop(){
+    fn main_loop(buffer: &mut String){
         loop{
             match read(){
                 Ok(Key(event)) => {
@@ -50,18 +54,18 @@ impl Editor {
                             Char('q' | 'c') => {
                                 break;
                             },
-                            Char(c) => {
-                                println!("pressed ctrl-{c}\r");
-                            },
                             _ => (),
                         }
                     }else{
                         match event.code{
                             Char(c)=>{
-                                print!("{c}");
+                                buffer.push(c);
                             },
                             Enter => {
-                                print!("\r\n");
+                                buffer.push_str("\r\n");
+                            },
+                            Backspace => {
+                                buffer.pop();
                             },
                             _ => (),
                         }
@@ -70,6 +74,8 @@ impl Editor {
                 Err(err) => println!("Error: {err}"),
                 _ => (),
             }
+            Editor::clear_screen();
+            print!("{}",buffer);
             stdout().flush().unwrap();
         }
     }
