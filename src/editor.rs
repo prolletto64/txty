@@ -7,6 +7,7 @@ use crossterm::event::{
 };
 use crossterm::execute;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType};
+use std::fs::File;
 use std::io::{stdout, Write};
 use std::option::Option::Some;
 
@@ -59,6 +60,17 @@ impl Editor {
                         match event.code {
                             Char('q' | 'c') => {
                                 break;
+                            }
+                            Char('s')=>{
+                                match File::create("out.txt"){
+                                    Ok(mut f) => {
+                                        match f.write_all(buffer.as_bytes()){
+                                            Ok(()) =>(),
+                                            Err(err) => panic!("{err}")
+                                        }
+                                    }
+                                    Err(err) => panic!("{err}"),
+                                }
                             }
                             Char(c) => {
                                 buffer.push(c);
